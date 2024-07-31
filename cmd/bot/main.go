@@ -4,11 +4,30 @@ import (
 	"flag"
 	"log"
 
-	"github.com/greenblat17/alarm-notification-bot/internal/clients/telegram"
+	tgClient "github.com/greenblat17/alarm-notification-bot/internal/clients/telegram"
+	eventconsumer "github.com/greenblat17/alarm-notification-bot/internal/consumer/event-consumer"
+	"github.com/greenblat17/alarm-notification-bot/internal/events/telegram"
+	"github.com/greenblat17/alarm-notification-bot/internal/storage/files"
+)
+
+const (
+	storagePath = "storage"
+	batchSize   = 100
 )
 
 func main() {
-	tgClient := telegram.New(mustHost(), mustToken())
+	eventProcessor := telegram.New(
+		tgClient.New(mustHost(), mustToken()),
+		files.New(storagePath),
+	)
+
+	log.Println("service started")
+
+	consumer := eventconsumer.New(eventProcessor, eventProcessor, batchSize)
+
+	if err := consumer.Start(); err != nil {
+		log.Fatalf("service stopped: %v", err)
+	}
 }
 
 func mustToken() string {
