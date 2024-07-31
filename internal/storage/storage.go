@@ -2,6 +2,7 @@ package storage
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
 	"time"
@@ -21,6 +22,10 @@ type Page struct {
 	Username  string
 	CreatedAt time.Time
 }
+
+var (
+	ErrNoSavedPages = errors.New("no saved pages")
+)
 
 func (p *Page) Hash() (string, error) {
 	const errMsg = "cannot calculate hash"
